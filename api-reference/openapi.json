@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "title": "Compasso SaaS API Reference",
+    "description": "Welcome to the Compasso API Documentation, your comprehensive guide to detailed insights into our API endpoints, authentication methods, data structures, and best practices to streamline your development process.",
     "license": {
       "name": "MIT"
     },
@@ -19,7 +19,7 @@
     }
   ],
   "paths": {
-    "/plants": {
+    "/sessions": {
       "get": {
         "description": "Returns all plants from the system that the user has access to",
         "parameters": [
@@ -60,13 +60,13 @@
         }
       },
       "post": {
-        "description": "Creates a new plant in the store",
+        "description": "Authenticate the user",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "description": "Authenticates the user and returns an access token",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/AuthenticateUser"
               }
             }
           },
@@ -74,11 +74,11 @@
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Session response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/User"
                 }
               }
             }
@@ -132,47 +132,84 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "User": {
+        "required": [],
         "type": "object",
         "properties": {
+          "id": {
+            "description": "Uuid for the user",
+            "type": "string",
+            "format": "int64"
+          },
           "name": {
-            "description": "The name of the plant",
+            "description": "The user name",
             "type": "string"
           },
-          "tag": {
-            "description": "Tag to specify the type",
+          "email": {
+            "description": "The user e-mail",
+            "type": "string"
+          },
+          "image": {
+            "description": "The user avatar",
+            "type": "integer"
+          },
+          "email_verified_at": {
+            "description": "The time that the user has verified its email",
+            "type": "string"
+          },
+          "is_two_factor_enabled": {
+            "description": "If the user has enabled the 2FA",
+            "type": "integer"
+          },
+          "is_team_created": {
+            "description": "If the user has already created a team",
+            "type": "integer"
+          },
+          "is_stripe_connected": {
+            "description": "If the user has connected with Stripe for invoicing",
+            "type": "integer"
+          },
+          "subscription": {
+            "description": "The type the user is subscribed: free, pro",
+            "type": "string"
+          },
+          "flag_type": {
+            "description": "The flag the user is on: default, beta",
+            "type": "string"
+          },
+          "access_token": {
+            "description": "The user access token",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "The time the user has authenticated",
             "type": "string"
           }
         }
       },
-      "NewPlant": {
+      "AuthenticateUser": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/Plant"
+            "$ref": "#/components/schemas/User"
           },
           {
-            "required": [
-              "id"
-            ],
+            "required": ["name", "password"],
             "type": "object",
             "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+              "email": {
+                "description": "The user e-mail",
+                "type": "string"
+              },
+              "password": {
+                "description": "The user password (min 6)",
+                "type": "string"
               }
             }
           }
         ]
       },
       "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+        "required": ["error", "message"],
         "type": "object",
         "properties": {
           "error": {
