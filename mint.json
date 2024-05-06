@@ -60,7 +60,6 @@
     {
       "group": "Essentials",
       "pages": [
-        "essentials/markdown",
         "essentials/code",
         "essentials/images",
         "essentials/settings",
@@ -71,15 +70,19 @@
     {
       "group": "API Documentation",
       "pages": [
-        "api-reference/introduction"
+        "api-reference/introduction",
+        "api-reference/permissions"
       ]
     },
     {
-      "group": "Endpoint Examples",
+      "group": "Endpoints",
       "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
+        "api-reference/endpoint/create-session",
+        "api-reference/endpoint/get-user",
+        "api-reference/endpoint/update-user",
+        "api-reference/endpoint/refresh-token",
+        "api-reference/endpoint/create-user",
+        "api-reference/endpoint/get-2fa-token"
       ]
     }
   ],

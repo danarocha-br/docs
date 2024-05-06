@@ -19,36 +19,84 @@
     }
   ],
   "paths": {
-    "/api/user": {
+    "/user": {
       "get": {
-        "description": "Return the user profile",
-        "parameters": [
+        "operationId": "getUserProfile",
+        "tags": ["User"],
+        "summary": "Fetches the authenticated user's profile.",
+        "description": "Retrieves detailed information about the authenticated user's profile.",
+        "security": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
+            "bearerAuth": []
           }
         ],
         "responses": {
           "200": {
-            "description": "User response",
+            "description": "Successfully retrieved user profile.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
-                  }
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountNotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or other server-side error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateUserProfile",
+        "tags": ["User"],
+        "summary": "Updates the authenticated user's profile.",
+        "description": "Allows users to update their profile information, including email, password, and various preferences.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Data required to update the user profile.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
                 }
               }
             }
           },
           "400": {
-            "description": "Unexpected error",
+            "description": "Bad request due to invalid parameters.",
             "content": {
               "application/json": {
                 "schema": {
@@ -60,31 +108,95 @@
         }
       }
     },
-    "/api/sessions": {
+    "/users": {
       "post": {
-        "description": "Authenticates a user and returns an access token along with user details.",
+        "security": [],
+        "operationId": "registerUser",
+        "tags": ["User Management"],
+        "summary": "Registers a new user.",
+        "description": "Creates a new user account with the provided name, email, and password. Returns the user details upon successful registration.",
         "requestBody": {
-          "description": "Credentials required to authenticate the user.",
+          "description": "User registration data.",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["email", "password"],
+                "required": ["name", "email", "password"],
                 "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Full name of the user."
+                  },
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "description": "User's email address."
+                    "description": "Email address of the user. Must be unique."
                   },
                   "password": {
                     "type": "string",
-                    "description": "User's password, minimum 6 characters."
+                    "description": "Password for the user account. Must be at least 6 characters."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
                   }
                 }
               }
             }
           },
-          "required": true
+          "409": {
+            "description": "Email already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error or unable to register user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SomethingWentWrongError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions": {
+      "post": {
+        "tags": ["Authentication"],
+        "operationId": "login",
+        "summary": "Authenticates a user and returns an access token.",
+        "description": "Authenticates a user and provides an access token along with user details.",
+        "requestBody": {
+          "description": "Credentials required to authenticate the user.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
         },
         "responses": {
           "200": {
@@ -98,7 +210,119 @@
             }
           },
           "400": {
-            "description": "Unexpected error",
+            "description": "Invalid credentials provided or other validation error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or other server-side error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SomethingWentWrongError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/token/refresh": {
+      "patch": {
+        "operationId": "refreshToken",
+        "tags": ["Tokens"],
+        "summary": "Refreshes the user's authentication tokens.",
+        "description": "This endpoint refreshes the user's authentication tokens using a secure cookie that should be sent with the request.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authentication tokens refreshed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "Newly issued JWT access token."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access - no or invalid refresh token provided.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error occurred while processing the refresh token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/token/two-factor": {
+      "get": {
+        "operationId": "2FAToken",
+        "tags": ["Tokens"],
+        "summary": "Return a 6 digit 2FA token.",
+        "description": "This endpoint returns a 6 digit 2FA token.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "2FA token generated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "2FA token."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Internal server error occurred while processing the refresh token.",
             "content": {
               "application/json": {
                 "schema": {
@@ -115,76 +339,137 @@
     "schemas": {
       "User": {
         "type": "object",
-        "required": [
-          "id",
-          "email"
-        ],
+        "required": ["id", "email"],
         "properties": {
           "id": {
-            "description": "Unique identifier for the user.",
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "Unique identifier for the user."
           },
           "name": {
-            "description": "The user's name.",
-            "type": "string"
+            "type": "string",
+            "description": "The user's name."
           },
           "email": {
-            "description": "The user's email address.",
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "description": "The user's email address."
           },
           "image": {
-            "description": "The user's avatar.",
-            "type": "string"
+            "type": "string",
+            "description": "The user's avatar."
           },
           "email_verified_at": {
-            "description": "The time that the user verified their email.",
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "The time that the user verified their email."
           },
           "is_two_factor_enabled": {
-            "description": "Indicates whether the user has enabled two-factor authentication.",
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Indicates whether the user has enabled two-factor authentication."
           },
           "is_team_created": {
-            "description": "Indicates whether the user has already created a team.",
-            "type": "boolean"
-          },
-          "is_stripe_connected": {
-            "description": "Indicates whether the user has connected with Stripe for invoicing.",
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Indicates whether the user has already created a team."
           },
           "subscription": {
-            "description": "The subscription tier of the user: free, pro, etc.",
-            "type": "string"
+            "type": "string",
+            "description": "The subscription tier of the user: free, pro, etc."
           },
           "flag_type": {
-            "description": "The flag the user is on: default, beta, etc.",
-            "type": "string"
+            "type": "string",
+            "description": "The flag the user is on: default, beta, etc."
           },
           "access_token": {
-            "description": "JWT access token for the session.",
-            "type": "string"
+            "type": "string",
+            "description": "JWT access token for the session."
           },
           "created_at": {
-            "description": "The time the user authenticated.",
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "The time the user authenticated."
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address."
+          },
+          "password": {
+            "type": "string",
+            "description": "User's password, minimum 6 characters."
+          }
+        }
+      },
+      "UserUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The user's full name."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "A new email address to update the current one."
+          },
+          "password_hash": {
+            "type": "string",
+            "description": "Current password hash for verification purposes."
+          },
+          "new_password": {
+            "type": "string",
+            "description": "New password for the user."
+          },
+          "email_verified_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the user's email was verified."
+          },
+          "is_two_factor_enabled": {
+            "type": "boolean",
+            "description": "Indicates if two-factor authentication is enabled."
+          },
+          "is_team_created": {
+            "type": "boolean",
+            "description": "Indicates if the user has created a team."
+          },
+          "image": {
+            "type": "string",
+            "description": "URL of the user's avatar image."
           }
         }
       },
       "Error": {
         "type": "object",
-        "required": ["error", "message"],
+        "required": ["message"],
         "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
           "message": {
             "type": "string",
             "description": "Error message describing what went wrong."
+          }
+        }
+      },
+      "AccountNotFoundError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message indicating the account was not found."
+          }
+        }
+      },
+      "SomethingWentWrongError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A general error that occurs when an operation fails on the server."
           }
         }
       }
@@ -192,7 +477,13 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "COMPASSO_TOKEN"
       }
     }
   }
