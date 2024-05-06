@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "Compasso SaaS API Reference",
-    "description": "Welcome to the Compasso API Documentation, your comprehensive guide to detailed insights into our API endpoints, authentication methods, data structures, and best practices to streamline your development process.",
+    "description": "Welcome to the Compasso API Documentation, your comprehensive guide to integrating Compasso's powerful management solutions into your freelance workflow. This documentation provides detailed insights into our API endpoints, authentication methods, data structures, and best practices to streamline your development process.",
     "license": {
       "name": "MIT"
     },
@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.compasso.team"
     }
   ],
   "security": [
@@ -19,9 +19,9 @@
     }
   ],
   "paths": {
-    "/sessions": {
+    "/api/user": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "description": "Return the user profile",
         "parameters": [
           {
             "name": "limit",
@@ -35,13 +35,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "User response",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Plant"
+                    "$ref": "#/components/schemas/User"
                   }
                 }
               }
@@ -58,15 +58,29 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/sessions": {
       "post": {
-        "description": "Authenticate the user",
+        "description": "Authenticates a user and returns an access token along with user details.",
         "requestBody": {
-          "description": "Authenticates the user and returns an access token",
+          "description": "Credentials required to authenticate the user.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AuthenticateUser"
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "User's password, minimum 6 characters."
+                  }
+                }
               }
             }
           },
@@ -74,7 +88,7 @@
         },
         "responses": {
           "200": {
-            "description": "Session response",
+            "description": "Authentication successful.",
             "content": {
               "application/json": {
                 "schema": {
@@ -84,40 +98,7 @@
             }
           },
           "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+            "description": "Unexpected error",
             "content": {
               "application/json": {
                 "schema": {
@@ -133,91 +114,77 @@
   "components": {
     "schemas": {
       "User": {
-        "required": [],
         "type": "object",
+        "required": [
+          "id",
+          "email"
+        ],
         "properties": {
           "id": {
-            "description": "Uuid for the user",
+            "description": "Unique identifier for the user.",
             "type": "string",
-            "format": "int64"
+            "format": "uuid"
           },
           "name": {
-            "description": "The user name",
+            "description": "The user's name.",
             "type": "string"
           },
           "email": {
-            "description": "The user e-mail",
-            "type": "string"
+            "description": "The user's email address.",
+            "type": "string",
+            "format": "email"
           },
           "image": {
-            "description": "The user avatar",
-            "type": "integer"
-          },
-          "email_verified_at": {
-            "description": "The time that the user has verified its email",
+            "description": "The user's avatar.",
             "type": "string"
           },
+          "email_verified_at": {
+            "description": "The time that the user verified their email.",
+            "type": "string",
+            "format": "date-time"
+          },
           "is_two_factor_enabled": {
-            "description": "If the user has enabled the 2FA",
-            "type": "integer"
+            "description": "Indicates whether the user has enabled two-factor authentication.",
+            "type": "boolean"
           },
           "is_team_created": {
-            "description": "If the user has already created a team",
-            "type": "integer"
+            "description": "Indicates whether the user has already created a team.",
+            "type": "boolean"
           },
           "is_stripe_connected": {
-            "description": "If the user has connected with Stripe for invoicing",
-            "type": "integer"
+            "description": "Indicates whether the user has connected with Stripe for invoicing.",
+            "type": "boolean"
           },
           "subscription": {
-            "description": "The type the user is subscribed: free, pro",
+            "description": "The subscription tier of the user: free, pro, etc.",
             "type": "string"
           },
           "flag_type": {
-            "description": "The flag the user is on: default, beta",
+            "description": "The flag the user is on: default, beta, etc.",
             "type": "string"
           },
           "access_token": {
-            "description": "The user access token",
+            "description": "JWT access token for the session.",
             "type": "string"
           },
           "created_at": {
-            "description": "The time the user has authenticated",
-            "type": "string"
+            "description": "The time the user authenticated.",
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
-      "AuthenticateUser": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/User"
-          },
-          {
-            "required": ["name", "password"],
-            "type": "object",
-            "properties": {
-              "email": {
-                "description": "The user e-mail",
-                "type": "string"
-              },
-              "password": {
-                "description": "The user password (min 6)",
-                "type": "string"
-              }
-            }
-          }
-        ]
-      },
       "Error": {
-        "required": ["error", "message"],
         "type": "object",
+        "required": ["error", "message"],
         "properties": {
           "error": {
             "type": "integer",
             "format": "int32"
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "description": "Error message describing what went wrong."
           }
         }
       }
