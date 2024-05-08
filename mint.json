@@ -75,7 +75,7 @@
       ]
     },
     {
-      "group": "Endpoints",
+      "group": "Users",
       "pages": [
         "api-reference/endpoint/create-session",
         "api-reference/endpoint/get-user",
@@ -83,6 +83,17 @@
         "api-reference/endpoint/refresh-token",
         "api-reference/endpoint/create-user",
         "api-reference/endpoint/get-2fa-token"
+      ]
+    },
+    {
+      "group": "Teams",
+      "pages": [
+        "api-reference/endpoint/get-team-by-user-id",
+        "api-reference/endpoint/update-team",
+        "api-reference/endpoint/delete-team",
+        "api-reference/endpoint/get-membership",
+        "api-reference/endpoint/get-memberships-by-team-slug",
+        "api-reference/endpoint/transfer-team-ownership"
       ]
     }
   ],

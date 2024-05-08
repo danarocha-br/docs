@@ -333,6 +333,478 @@
           }
         }
       }
+    },
+    "/team": {
+      "get": {
+        "operationId": "getTeam",
+        "tags": ["Team"],
+        "summary": "Get the team data.",
+        "description": "Get the team data for the authenticated user.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "description": "Unique identifier for the team.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Team"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to invalid parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access - no or invalid access token provided.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or other server-side error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SomethingWentWrongError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateTeam",
+        "tags": ["Team"],
+        "summary": "Updates the team data.",
+        "description": "Updates the team data for the authenticated user if user is an admin.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Data required to update the team.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Team updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Team"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to invalid parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access - no or invalid access token provided.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or other server-side error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SomethingWentWrongError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "tranferOnwership",
+        "tags": ["Team"],
+        "summary": "Transfer a team's ownership.",
+        "description": "Transfer a team's ownership if user is the previous owner.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Data required to transfer a team's ownership.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["new_onwer_id", "team_id"],
+                "properties": {
+                  "team_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The ID of the team."
+                  },
+                  "new_owner_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The ID of the new owner."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Team ownership transferred successfully."
+          },
+          "400": {
+            "description": "Bad request due to invalid parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized access - no or invalid access token provided.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Conflict or other server-side error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SomethingWentWrongError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteTeam",
+        "tags": ["Team"],
+        "summary": "Deletes the authenticated user's team.",
+        "description": "Deletes the team if the authenticated user is the team's owner.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "description": "Unique identifier for the team.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted the team.",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Bad request - missing or invalid team id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Conflict or other server-side error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/membership": {
+      "get": {
+        "operationId": "getMembership",
+        "tags": ["Team"],
+        "summary": "Fetches the authenticated user's team membership.",
+        "description": "Fetches the authenticated user's team membership.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "description": "Unique identifier for the team.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved user team membership.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "email"],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Unique identifier for the membership."
+                    },
+                    "team_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Unique identifier for the team."
+                    },
+                    "role": {
+                      "type": "string",
+                      "description": "The user's role in the team."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing or invalid team id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or other server-side error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/memberships": {
+      "get": {
+        "operationId": "getMemberships",
+        "tags": ["Team"],
+        "summary": "Fetches all memberships assigned to a team slug",
+        "description": "Fetches all memberships assigned to a team slug",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "Unique slug identifier for the team.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved team memberships.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "name", "slug"],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Unique identifier for the team."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Name for the team."
+                    },
+                    "image": {
+                      "type": "string",
+                      "description": "Logo for the team."
+                    },
+                    "slug": {
+                      "type": "string",
+                      "description": "Unique slug identifier for the team."
+                    },
+                    "brand_color": {
+                      "type": "string",
+                      "description": "Brand color for the team."
+                    },
+                    "members": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Membership"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid team slug provided.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Team not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or other server-side error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -391,6 +863,126 @@
           }
         }
       },
+      "Team": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "slug",
+          "business_activity",
+          "business_type",
+          "user_id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the team."
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the user."
+          },
+          "name": {
+            "type": "string",
+            "description": "The team's name."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The team's email address."
+          },
+          "image": {
+            "type": "string",
+            "description": "The team's avatar."
+          },
+          "brand_color": {
+            "type": "string",
+            "description": "The team's brand color."
+          },
+          "registered_number": {
+            "type": "string",
+            "description": "The team's registered number."
+          },
+          "phone_number": {
+            "type": "string",
+            "description": "The team's phone number."
+          },
+          "default_currency": {
+            "type": "string",
+            "description": "The team's default currency."
+          },
+          "address_street": {
+            "type": "string",
+            "description": "The team's address street."
+          },
+          "address_number": {
+            "type": "string",
+            "description": "The team's address number."
+          },
+          "address_city": {
+            "type": "string",
+            "description": "The team's address city."
+          },
+          "address_state": {
+            "type": "string",
+            "description": "The team's address state."
+          },
+          "address_country": {
+            "type": "string",
+            "description": "The team's address country."
+          },
+          "address_zipcode": {
+            "type": "string",
+            "description": "The team's address zipcode."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time the team was created."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time the team was updated last time."
+          }
+        }
+      },
+      "Membership": {
+        "type": "object",
+        "required": ["id", "name", "email", "created_at", "role"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the member."
+          },
+          "name": {
+            "type": "string",
+            "description": "The members's name."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The member's email address."
+          },
+          "image": {
+            "type": "string",
+            "description": "The members's avatar."
+          },
+          "role": {
+            "type": "string",
+            "description": "The role of the member in the team."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time the members was created."
+          }
+        }
+      },
       "LoginRequest": {
         "type": "object",
         "required": ["email", "password"],
@@ -442,6 +1034,69 @@
           "image": {
             "type": "string",
             "description": "URL of the user's avatar image."
+          }
+        }
+      },
+      "TeamRequest": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "description": "The ID of the team."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the team."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The team's email address."
+          },
+          "brand_color": {
+            "type": "string",
+            "description": "The team's brand color."
+          },
+          "image": {
+            "type": "string",
+            "description": "URL of the team's avatar image."
+          },
+          "registered_number": {
+            "type": "string",
+            "description": "The team's registered number."
+          },
+          "phone_number": {
+            "type": "string",
+            "description": "The team's phone number."
+          },
+          "default_currency": {
+            "type": "string",
+            "description": "The team's default currency."
+          },
+          "address_street": {
+            "type": "string",
+            "description": "The team's address street."
+          },
+          "address_number": {
+            "type": "string",
+            "description": "The team's address number."
+          },
+          "address_city": {
+            "type": "string",
+            "description": "The team's address city."
+          },
+          "address_state": {
+            "type": "string",
+            "description": "The team's address state."
+          },
+          "address_country": {
+            "type": "string",
+            "description": "The team's address country."
+          },
+          "address_zipcode": {
+            "type": "string",
+            "description": "The team's address zipcode."
           }
         }
       },
